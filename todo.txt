@@ -1,3 +1,3 @@
 - logs-system with user identify
 - price compare with our partners (instrument-Kirov, instrument-Siktivkar)
--
+- system that check for data-updates, clean, keep storage free
