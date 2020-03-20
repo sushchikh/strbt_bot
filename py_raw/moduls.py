@@ -5,6 +5,7 @@ import pandas as pd
 import telebot
 import datetime
 import random
+from datetime import timedelta
 
 
 
@@ -59,6 +60,28 @@ def get_strbt_dataframe_from_xls_file(logger, newest_file_name):
         logger.error(error_message)
 
 
+   ###    ########  ########  #### ######## #### ##     ## ########  ######
+  ## ##   ##     ## ##     ##  ##     ##     ##  ##     ## ##       ##    ##
+ ##   ##  ##     ## ##     ##  ##     ##     ##  ##     ## ##       ##
+##     ## ##     ## ##     ##  ##     ##     ##  ##     ## ######    ######
+######### ##     ## ##     ##  ##     ##     ##   ##   ##  ##             ##
+##     ## ##     ## ##     ##  ##     ##     ##    ## ##   ##       ##    ##
+##     ## ########  ########  ####    ##    ####    ###    ########  ######
+
+# --------------------------------------------------------------------------------------------
+# получает сообщение пользователя, добавляет его в файл с указанием точного времени
+def save_user_message(user_message):
+    """
+    Get user message, push it into file with current date and time
+    """
+    now_date_time_on_server = datetime.datetime.now() + timedelta(hours=3)
+    formated_date_time = now_date_time_on_server.strftime('%d.%m.%y, %H:%M:%S') + ' - '
+    # print(now_date_time)
+    output_line = '\n' + formated_date_time + user_message
+    with open('./../logs/users_message.txt', 'a') as f:
+        f.write(output_line)
+
+
 ########   #######  ########
 ##     ## ##     ##    ##
 ##     ## ##     ##    ##
@@ -77,6 +100,29 @@ def get_bot_token_from_yaml(logger):
     except FileNotFoundError as e:
         error_message = ('moduls/get_token_from_yaml - ' + str(e) + ' no token-file')
         logger.error(error_message)
+
+
+def bot_runner(logger, token):
+    bot = telebot.TeleBot(token)  # create bot
+
+    @bot.message_handler(commands=['start'])  # реагируем на надпись сатрт
+    def start_message(message):
+        bot.send_message(message.chat.id, 'Привет, присылай мне код товара - я расскажу тебе о нем подробнее')
+
+    @bot.message_handler(content_types=['text'])
+    def send_text(message):
+        user = (str(message.from_user.last_name) + ' ' +
+                str(message.from_user.first_name) + ' ' +
+                str(message.from_user.username))
+        user_message = user + ' - ' + message.text
+        save_user_message(user_message)
+
+        if 'привет' in message.text.lower():
+            bot.send_message(message.chat.id, 'И тебе привет')
+        elif message.text == 'Пока':
+            bot.send_message(message.chat.id, 'Пока')
+
+    bot.polling()
 
 
 def test_func(logger):
