@@ -2,6 +2,20 @@ import yaml
 import logging.config
 import os
 import pandas as pd
+import telebot
+import datetime
+import random
+
+
+
+########     ###    ########    ###
+##     ##   ## ##      ##      ## ##
+##     ##  ##   ##     ##     ##   ##
+##     ## ##     ##    ##    ##     ##
+##     ## #########    ##    #########
+##     ## ##     ##    ##    ##     ##
+########  ##     ##    ##    ##     ##
+
 
 # --------------------------------------------------------------------------------------------
 # созадет и возвращает логгер для логирования в файл
@@ -30,18 +44,40 @@ def get_name_of_newest_data_file(logger):
 
 
 # --------------------------------------------------------------------------------------------
-#
+# берет свежайщий файл, считывает его в датафрейм пандасовский
 def get_strbt_dataframe_from_xls_file(logger, newest_file_name):
     """read xls-file, return dataframe"""
     try:
         strbt_dataframe = pd.read_excel(newest_file_name, engine='xlrd', index_col='id')
         return strbt_dataframe
     except ValueError as e:
-        error_message = 'moduls/get_strbt_dataframe_from_xls_file - ' + str(e) + ' no argument with file name, look get_name_of_newest_data_file function'
+        error_message = ('moduls/get_strbt_dataframe_from_xls_file - ' + str(e) +
+                         ' no argument with file name, look get_name_of_newest_data_file function')
         logger.error(error_message)
     except FileNotFoundError as e:
         error_message = 'moduls/get_strbt_dataframe_from_xls_file - ' + str(e)
         logger.error(error_message)
+
+
+########   #######  ########
+##     ## ##     ##    ##
+##     ## ##     ##    ##
+########  ##     ##    ##
+##     ## ##     ##    ##
+##     ## ##     ##    ##
+########   #######     ##
+
+
+def get_bot_token_from_yaml(logger):
+    try:
+        with open('./../data/lpt.yaml', 'r') as f:
+            lpt = yaml.safe_load(f.read())
+            token = lpt['token']
+        return token
+    except FileNotFoundError as e:
+        error_message = ('moduls/get_token_from_yaml - ' + str(e) + ' no token-file')
+        logger.error(error_message)
+
 
 def test_func(logger):
     # logger.error('some error')
