@@ -48,6 +48,7 @@ def get_name_of_newest_data_file(logger):
 # берет свежайщий файл, считывает его в датафрейм пандасовский
 def get_strbt_dataframe_from_xls_file(logger, newest_file_name):
     """read xls-file, return dataframe"""
+
     try:
         strbt_dataframe = pd.read_excel(newest_file_name, engine='xlrd', index_col='id')
         return strbt_dataframe
@@ -60,6 +61,48 @@ def get_strbt_dataframe_from_xls_file(logger, newest_file_name):
         logger.error(error_message)
 
 
+# --------------------------------------------------------------------------------------------
+#
+def get_item_from_dataframe(logger, dataframe, message):
+    """
+    search message in dataframe, if find - return it to output_message
+    """
+    try:
+        message = int(message)
+        item_name = dataframe.loc[[message], ['Номенклатура']].values[0][0]
+        item_measure = dataframe.loc[[message], ['Ед.изм.']].values[0][0]
+        if item_measure == 'шт':
+            item_value = int(dataframe.loc[[message], ['Количество']].values[0][0])
+        else:
+            item_value = str(dataframe.loc[[message], ['Количество']].values[0][0])
+        item_reserve = dataframe.loc[[message], ['Резерв']].values[0][0]
+        if not(str(item_reserve).isdigit()):
+            item_reserve = 0
+        # item_price_prepayment = dataframe.loc[[message], ['ОптПредоплата']].values[0][0]
+        # item_price_retail = dataframe.loc[[message], ['Розница']].values[0][0]
+        item_price_prepayment = str('{0:,}'.format(dataframe.loc[[message], ['ОптПредоплата']].values[0][0])).replace(',', ' ')
+        item_price_retail = str('{0:,}'.format(dataframe.loc[[message], ['Розница']].values[0][0])).replace(',', ' ')
+
+
+        output_message = f"""    {item_name}
+
+остаток:  {item_value} {item_measure}
+резерв:  {item_reserve} {item_measure}
+
+розница:  {item_price_retail} р.
+опт-предоплата:  {item_price_prepayment} р."""
+        # print(output_message)
+        wrong_user_request = -1  # magic numbers =)
+    except ValueError:
+        output_message = 'Это не код товара, попробуй снова'
+        wrong_user_request = message
+    except KeyError:
+        output_message = """Я не знаю такого кода товара.
+Если ты уверен, что все правильно — напиши мне "да" и я сообщу об этом разработчику =)"""
+        wrong_user_request = message
+
+
+    return output_message, wrong_user_request
    ###    ########  ########  #### ######## #### ##     ## ########  ######
   ## ##   ##     ## ##     ##  ##     ##     ##  ##     ## ##       ##    ##
  ##   ##  ##     ## ##     ##  ##     ##     ##  ##     ## ##       ##
@@ -80,6 +123,28 @@ def save_user_message(user_message):
     output_line = '\n' + formated_date_time + user_message
     with open('./../logs/users_message.txt', 'a') as f:
         f.write(output_line)
+
+def save_stange_user_requests(user_request):
+    """
+    Get user message, push it into file with current date and time
+    """
+    now_date_time_on_server = datetime.datetime.now() + timedelta(hours=3)
+    formated_date_time = now_date_time_on_server.strftime('%d.%m.%y, %H:%M:%S') + ' - '
+    # print(now_date_time)
+    output_line = '\n' + formated_date_time + str(user_request)
+    with open('./../logs/users_strange_requests.txt', 'a') as f:
+        f.write(output_line)
+
+
+# --------------------------------------------------------------------------------------------
+# проверяет является ли сообщение числовым, возвращает тру или фолсе
+def is_message_digit(message):
+    try:
+        int(message)  # i know about isdigit() func
+        # print('сообщение пользователя цифровое')
+        return True
+    except ValueError:
+        return False
 
 
 ########   #######  ########
@@ -102,7 +167,7 @@ def get_bot_token_from_yaml(logger):
         logger.error(error_message)
 
 
-def bot_runner(logger, token):
+def bot_runner(logger, token, dataframe):
     bot = telebot.TeleBot(token)  # create bot
 
     @bot.message_handler(commands=['start'])  # реагируем на надпись сатрт
@@ -117,10 +182,21 @@ def bot_runner(logger, token):
         user_message = user + ' - ' + message.text
         save_user_message(user_message)
 
-        if 'привет' in message.text.lower():
-            bot.send_message(message.chat.id, 'И тебе привет')
-        elif message.text == 'Пока':
-            bot.send_message(message.chat.id, 'Пока')
+        # обработчик сообщения пользователя:
+        if is_message_digit(message.text):
+            output_message, wrong_user_request = get_item_from_dataframe(logger, dataframe, message.text)
+            bot.send_message(message.chat.id, output_message)
+            if wrong_user_request != -1:
+                wrong_user_request = str(wrong_user_request) + ' - ' + user
+                save_stange_user_requests(wrong_user_request)
+        else:
+            if 'привет' in message.text.lower():
+                bot.send_message(message.chat.id, 'И тебе привет')
+            elif message.text == 'Пока':
+                bot.send_message(message.chat.id, 'Пока')
+            elif message.text.lower() == 'да':
+                bot.send_message(message.chat.id, 'Хорошо, я написал разработчику, спасибо!')
+
 
     bot.polling()
 
