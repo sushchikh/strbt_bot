@@ -4,9 +4,9 @@ import os
 import pandas as pd
 import telebot
 import datetime
-import random
+import requests
 from datetime import timedelta
-
+from time import sleep
 
 
 ########     ###    ########    ###
@@ -147,6 +147,19 @@ def is_message_digit(message):
         return False
 
 
+# --------------------------------------------------------------------------------------------
+#
+def get_picture_of_item(logger, message):
+    try:
+        url = 'http://stroybatinfo.ru/test/' + str(int(message)) + '.jpg'
+        r = requests.get(url)
+        item_img_name = './../img/' + str(message) + '.jpg'
+        return item_img_name
+    except FileNotFoundError as e:
+        error_message = 'moduls/get_picture_of_item - ' + str(e)
+        logger.error(error_message)
+
+
 ########   #######  ########
 ##     ## ##     ##    ##
 ##     ## ##     ##    ##
@@ -184,8 +197,16 @@ def bot_runner(logger, token, dataframe):
 
         # обработчик сообщения пользователя:
         if is_message_digit(message.text):
+            # description of item:
             output_message, wrong_user_request = get_item_from_dataframe(logger, dataframe, message.text)
             bot.send_message(message.chat.id, output_message)
+
+            # photo of item:
+            photo = open('884.jpg', 'r')
+            bot.send_photo(message.chat.id, photo)
+            photo.close()
+
+
             if wrong_user_request != -1:
                 wrong_user_request = str(wrong_user_request) + ' - ' + user
                 save_stange_user_requests(wrong_user_request)
@@ -198,11 +219,19 @@ def bot_runner(logger, token, dataframe):
                 bot.send_message(message.chat.id, 'Хорошо, я написал разработчику, спасибо!')
 
 
-    bot.polling()
+    while True:
+        try:
+            bot.polling()
+        except Exception:
+            sleep(15)
 
 
 def test_func(logger):
     # logger.error('some error')
     pass
 
+
+if __name__ == '__main__':
+    logger = 'some_thing_for_test'
+    get_picture_of_item(logger, '884')
 
