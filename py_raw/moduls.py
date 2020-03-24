@@ -221,7 +221,8 @@ def bot_runner(logger, token, dataframe):
             is_image_exist, item_img_name = get_picture_of_item(logger, message.text)
             if is_image_exist and is_item_exist:
                 photo = open(item_img_name, 'rb')
-                bot.send_photo(message.chat.id, photo, caption=str(message.text))
+                # bot.send_photo(message.chat.id, photo, caption=str(message.text))
+                bot.send_document(message.chat.id, photo, caption=str(message.text))
                 photo.close()
             elif is_item_exist and not(is_image_exist):
                 bot.send_message(message.chat.id, item_img_name)  # if no image send message
