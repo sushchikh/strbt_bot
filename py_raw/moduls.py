@@ -93,16 +93,18 @@ def get_item_from_dataframe(logger, dataframe, message):
 опт-предоплата:  {item_price_prepayment} р."""
         # print(output_message)
         wrong_user_request = -1  # magic numbers =)
+        is_item_exist = True
     except ValueError:
         output_message = 'Это не код товара, попробуй снова'
         wrong_user_request = message
+        is_item_exist = False
     except KeyError:
         output_message = """Я не знаю такого кода товара.
 Если ты уверен, что все правильно — напиши мне "да" и я сообщу об этом разработчику =)"""
         wrong_user_request = message
+        is_item_exist = False
 
-
-    return output_message, wrong_user_request
+    return output_message, wrong_user_request, is_item_exist
    ###    ########  ########  #### ######## #### ##     ## ########  ######
   ## ##   ##     ## ##     ##  ##     ##     ##  ##     ## ##       ##    ##
  ##   ##  ##     ## ##     ##  ##     ##     ##  ##     ## ##       ##
@@ -153,11 +155,18 @@ def get_picture_of_item(logger, message):
     try:
         url = 'http://stroybatinfo.ru/test/' + str(int(message)) + '.jpg'
         r = requests.get(url)
+        print('status_code:', r.status_code)
+        if r.status_code == 404:
+            item_img_name = 'No such image =('
+            return False, item_img_name
+        open('./../img/' + str(message) + '.jpg', 'wb').write(r.content)
         item_img_name = './../img/' + str(message) + '.jpg'
-        return item_img_name
-    except FileNotFoundError as e:
+        return True, item_img_name  # if file exist
+    except (FileNotFoundError, FileExistsError) as e:
         error_message = 'moduls/get_picture_of_item - ' + str(e)
         logger.error(error_message)
+        item_img_name = 'No such image =('
+        return False, item_img_name  # if file not exist
 
 
 ########   #######  ########
@@ -198,14 +207,18 @@ def bot_runner(logger, token, dataframe):
         # обработчик сообщения пользователя:
         if is_message_digit(message.text):
             # description of item:
-            output_message, wrong_user_request = get_item_from_dataframe(logger, dataframe, message.text)
+            output_message, wrong_user_request, is_item_exist = get_item_from_dataframe(logger, dataframe, message.text)
             bot.send_message(message.chat.id, output_message)
-
-            # photo of item:
-            photo = open('884.jpg', 'r')
-            bot.send_photo(message.chat.id, photo)
-            photo.close()
-
+            # download and send photo
+            is_image_exist, item_img_name = get_picture_of_item(logger, message.text)
+            if is_image_exist and is_item_exist:
+                photo = open(item_img_name, 'rb')
+                bot.send_photo(message.chat.id, photo)
+                photo.close()
+            elif is_item_exist and not(is_image_exist):
+                bot.send_message(message.chat.id, item_img_name)  # if no image send message
+            elif not(is_item_exist) and not(is_image_exist):
+                pass
 
             if wrong_user_request != -1:
                 wrong_user_request = str(wrong_user_request) + ' - ' + user
@@ -219,10 +232,13 @@ def bot_runner(logger, token, dataframe):
                 bot.send_message(message.chat.id, 'Хорошо, я написал разработчику, спасибо!')
 
 
+
+
     while True:
         try:
             bot.polling()
-        except Exception:
+        except Exception as e:
+            print(e)
             sleep(15)
 
 
