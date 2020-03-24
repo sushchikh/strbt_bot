@@ -69,7 +69,13 @@ def get_item_from_dataframe(logger, dataframe, message):
     """
     try:
         message = int(message)
-        item_name = dataframe.loc[[message], ['Номенклатура']].values[0][0]
+        item_name = dataframe.loc[[message], ['Номенклатура']].values[0][0].split(', ')
+        formated_item_name = ''
+        for i in item_name:
+            if i == item_name[0]:
+                formated_item_name = '*'+ formated_item_name + str(i)+ '*' + '\n'
+            else:
+                formated_item_name = formated_item_name + str(i) + '\n'
         item_measure = dataframe.loc[[message], ['Ед.изм.']].values[0][0]
         if item_measure == 'шт':
             item_value = int(dataframe.loc[[message], ['Количество']].values[0][0])
@@ -84,13 +90,12 @@ def get_item_from_dataframe(logger, dataframe, message):
         item_price_retail = str('{0:,}'.format(dataframe.loc[[message], ['Розница']].values[0][0])).replace(',', ' ')
 
 
-        output_message = f"""    {item_name}
-
+        output_message = f"""    {formated_item_name}
 остаток:  {item_value} {item_measure}
 резерв:  {item_reserve} {item_measure}
 
-розница:  {item_price_retail} р.
-опт-предоплата:  {item_price_prepayment} р."""
+розница:  *{item_price_retail}* р.
+опт-предоплата:  *{item_price_prepayment}* р."""
         # print(output_message)
         wrong_user_request = -1  # magic numbers =)
         is_item_exist = True
@@ -100,7 +105,7 @@ def get_item_from_dataframe(logger, dataframe, message):
         is_item_exist = False
     except KeyError:
         output_message = """Я не знаю такого кода товара.
-Если ты уверен, что все правильно — напиши мне "да" и я сообщу об этом разработчику =)"""
+Если ты уверен, что все правильно — напиши мне "да" и я сообщу об этом разработчику 😉"""
         wrong_user_request = message
         is_item_exist = False
 
@@ -153,11 +158,10 @@ def is_message_digit(message):
 #
 def get_picture_of_item(logger, message):
     try:
-        url = 'http://stroybatinfo.ru/test/' + str(int(message)) + '.jpg'
+        url = 'http://stroybatinfo.ru/imgs_for_bot/' + str(int(message)) + '.jpg'
         r = requests.get(url)
-        print('status_code:', r.status_code)
         if r.status_code == 404:
-            item_img_name = 'No such image =('
+            item_img_name = 'К этой позиции я не нашел картинки, прости 😥'
             return False, item_img_name
         open('./../img/' + str(message) + '.jpg', 'wb').write(r.content)
         item_img_name = './../img/' + str(message) + '.jpg'
@@ -191,7 +195,11 @@ def get_bot_token_from_yaml(logger):
 
 def bot_runner(logger, token, dataframe):
     bot = telebot.TeleBot(token)  # create bot
-
+    markdown = """
+    *bold text*
+    _italic text_
+    [text](URL)
+    """
     @bot.message_handler(commands=['start'])  # реагируем на надпись сатрт
     def start_message(message):
         bot.send_message(message.chat.id, 'Привет, присылай мне код товара - я расскажу тебе о нем подробнее')
@@ -208,12 +216,12 @@ def bot_runner(logger, token, dataframe):
         if is_message_digit(message.text):
             # description of item:
             output_message, wrong_user_request, is_item_exist = get_item_from_dataframe(logger, dataframe, message.text)
-            bot.send_message(message.chat.id, output_message)
+            bot.send_message(message.chat.id, output_message, parse_mode="Markdown")
             # download and send photo
             is_image_exist, item_img_name = get_picture_of_item(logger, message.text)
             if is_image_exist and is_item_exist:
                 photo = open(item_img_name, 'rb')
-                bot.send_photo(message.chat.id, photo)
+                bot.send_photo(message.chat.id, photo, caption=str(message.text))
                 photo.close()
             elif is_item_exist and not(is_image_exist):
                 bot.send_message(message.chat.id, item_img_name)  # if no image send message
@@ -229,7 +237,7 @@ def bot_runner(logger, token, dataframe):
             elif message.text == 'Пока':
                 bot.send_message(message.chat.id, 'Пока')
             elif message.text.lower() == 'да':
-                bot.send_message(message.chat.id, 'Хорошо, я написал разработчику, спасибо!')
+                bot.send_message(message.chat.id, 'Хорошо, я написал разработчику, спасибо! 🚀')
 
 
 
