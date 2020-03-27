@@ -144,7 +144,58 @@ def get_item_from_dataframe(logger, dataframe, message):
         is_item_exist = False
 
     return output_message, wrong_user_request, is_item_exist
-   ###    ########  ########  #### ######## #### ##     ## ########  ######
+
+
+# --------------------------------------------------------------------------------------------
+# обращаемся к функции, если сообщение не строго числовое, пытаемся найти его в названии товаров
+def find_item_func(logger, message, dataframe):
+    """
+    split message by whitespace, check matches in all items_names
+    """
+
+    list_of_words_from_user_message = message.strip().lower().split(' ')
+    # print(strbt_dataframe)
+    print('поисковое пользовательское сообщене:', *list_of_words_from_user_message)
+    # print(strbt_dataframe.iloc[1]['Номенклатура'])
+    count_of_matches = 0
+    pos_of_match_item = []
+    list_of_few_items_names = []
+    for i in range(len(dataframe)):
+
+        list_of_words_from_dataframe_item = str(dataframe.iloc[i]['Номенклатура']).replace('"', '').replace('(','').replace(')', '').strip().lower().split(' ')
+
+        # print(*list_of_words_from_dataframe_item)
+        check = all(item in list_of_words_from_dataframe_item for item in list_of_words_from_user_message)
+        if check:
+            count_of_matches += 1
+            pos_of_match_item.append(dataframe.iloc[i])
+            list_of_few_items_names.append(str(
+                '*' +
+                str(dataframe.index.values[i]) +
+                '*' + ' - ' +
+                str(dataframe.iloc[i]['Номенклатура']).replace('"', '').replace('(', '').replace(')', '').strip()))
+    # if count_of_matches == 1:
+    #     output_message = ('Нашел одно совпадение:\n' +
+    #                       str(pos_of_match_item[0]) + ' - ')
+        if count_of_matches > 11:
+            break
+
+    if count_of_matches == 0:
+        output_message = 'не нашел ни одного совпадения, либо что-то пошло не так 😖'
+    elif count_of_matches > 10:
+        output_message = "слишком много совпадений, попробуй уточнить запрос"
+    elif 1 <= count_of_matches <= 10:  # если совпадения есть
+        # print(f'*нашел {count_of_matches} совпадений:*\n\n')
+        output_message = f'*нашел {count_of_matches} совпадений:*\n\n'
+        for i in list_of_few_items_names:
+            output_message += (str(i) + '\n')
+    else:
+        output_message = 'опа-опа'
+
+    return output_message
+
+
+###    ########  ########  #### ######## #### ##     ## ########  ######
   ## ##   ##     ## ##     ##  ##     ##     ##  ##     ## ##       ##    ##
  ##   ##  ##     ## ##     ##  ##     ##     ##  ##     ## ##       ##
 ##     ## ##     ## ##     ##  ##     ##     ##  ##     ## ######    ######
@@ -267,22 +318,24 @@ def bot_runner(logger, token, dataframe):
                 wrong_user_request = str(wrong_user_request) + ' - ' + user
                 save_stange_user_requests(wrong_user_request)
         else:
-            if 'привет' in message.text.lower():
+            if len(message.text) > 2:
+                output_message = find_item_func(logger, message.text, dataframe)
+                bot.send_message(message.chat.id, output_message, parse_mode="Markdown")
+            elif 'привет' in message.text.lower():
                 bot.send_message(message.chat.id, 'И тебе привет')
             elif message.text == 'Пока':
                 bot.send_message(message.chat.id, 'Пока')
             elif message.text.lower() == 'да':
                 bot.send_message(message.chat.id, 'Хорошо, я написал разработчику, спасибо! 🚀')
 
+    bot.polling()
 
-
-
-    while True:
-        try:
-            bot.polling()
-        except Exception as e:
-            print(e)
-            sleep(15)
+    # while True:
+    #     try:
+    #         bot.polling()
+    #     except Exception as e:
+    #         print(e)
+    #         sleep(15)
 
 
 def test_func(logger):
