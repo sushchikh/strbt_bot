@@ -23,7 +23,7 @@ from time import sleep
 # созадет и возвращает логгер для логирования в файл
 def get_logger():
     """return logger_object with parametrs from config.yaml"""
-    with open('./config.yaml', 'r') as f:
+    with open('/home/sushchikh/strbt_bot/py_raw/config.yaml', 'r') as f:
         config = yaml.safe_load(f.read())
         logging.config.dictConfig(config)
     logger = logging.getLogger(__name__)
@@ -40,7 +40,7 @@ def data_downloader(logger):
     # print(path_to_data_file_on_server)
     try:
         data_file = requests.get(path_to_data_file_on_server, allow_redirects=True)
-        name_of_saving_file = './../data/' + str(today.strftime("%Y%m%d") + '.csv')
+        name_of_saving_file = '/home/sushchikh/strbt_bot/data/' + str(today.strftime("%Y%m%d") + '.csv')
         with open(name_of_saving_file, 'wb') as file:
             file.write(data_file.content)
     except Exception as e:
@@ -53,7 +53,7 @@ def data_downloader(logger):
 def get_name_of_newest_data_file(logger):
     """filter full_list of files by end ".csv", sorted by time of change and take last one:"""
     try:
-        path_to_data_dir = '../data'
+        path_to_data_dir = '/home/sushchikh/strbt_bot/data'
         file_list = os.listdir(path_to_data_dir)
         full_list = [os.path.join(path_to_data_dir, i) for i in file_list]  # get full list of all files in dir
         newest_file_name = sorted(filter(lambda x: x.endswith('.csv'), full_list), key=os.path.getmtime)[-1]
@@ -213,7 +213,7 @@ def save_user_message(user_message):
     formated_date_time = now_date_time_on_server.strftime('%d.%m.%y, %H:%M:%S') + ' - '
     # print(now_date_time)
     output_line = '\n' + formated_date_time + user_message
-    with open('./../logs/users_message.txt', 'a') as f:
+    with open('/home/sushchikh/strbt_bot/logs/users_message.txt', 'a') as f:
         f.write(output_line)
 
 def save_stange_user_requests(user_request):
@@ -224,7 +224,7 @@ def save_stange_user_requests(user_request):
     formated_date_time = now_date_time_on_server.strftime('%d.%m.%y, %H:%M:%S') + ' - '
     # print(now_date_time)
     output_line = '\n' + formated_date_time + str(user_request)
-    with open('./../logs/users_strange_requests.txt', 'a') as f:
+    with open('/home/sushchikh/strbt_bot/logs/users_strange_requests.txt', 'a') as f:
         f.write(output_line)
 
 
@@ -248,8 +248,8 @@ def get_picture_of_item(logger, message):
         if r.status_code == 404:
             item_img_name = 'К этой позиции я не нашел картинки, прости 😥'
             return False, item_img_name
-        open('./../img/' + str(message) + '.jpg', 'wb').write(r.content)
-        item_img_name = './../img/' + str(message) + '.jpg'
+        open('/home/sushchikh/strbt_bot/img/' + str(message) + '.jpg', 'wb').write(r.content)
+        item_img_name = '/home/sushchikh/strbt_bot/img/' + str(message) + '.jpg'
         return True, item_img_name  # if file exist
     except (FileNotFoundError, FileExistsError) as e:
         error_message = 'moduls/get_picture_of_item - ' + str(e)
@@ -269,7 +269,7 @@ def get_picture_of_item(logger, message):
 
 def get_bot_token_from_yaml(logger):
     try:
-        with open('./../data/lpt.yaml', 'r') as f:
+        with open('/home/sushchikh/strbt_bot/py_raw/lpt.yaml', 'r') as f:
             lpt = yaml.safe_load(f.read())
             token = lpt['token']
         return token

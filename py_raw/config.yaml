@@ -18,7 +18,7 @@ handlers:
     level: ERROR
     formatter: simple
     mode: w
-    filename: ../logs/logs.txt
+    filename: /home/sushchikh/strbt_bot/logs/logs.txt
     encoding: UTF-8
     maxBytes: 8024
     backupCount: 3
