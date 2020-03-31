@@ -15,7 +15,7 @@ if __name__ == "__main__":
     logger = get_logger()
     data_downloader(logger)
     test_func(logger)
-    newest_data_file = get_name_of_newest_data_file(logger)
+    newest_data_file, time_of_data_file = get_name_of_newest_data_file(logger)
     strbt_dataframe = get_strbt_dataframe_from_xls_file(logger, newest_data_file)
     # TODO добавить считывание свежего датафрема по таймеру, скажем каждые два часа
     # print(strbt_dataframe)
@@ -23,6 +23,6 @@ if __name__ == "__main__":
     sleep(3)
     token = get_bot_token_from_yaml(logger)
     print('token get well done')
-    bot_runner(logger, token, strbt_dataframe)
+    bot_runner(logger, token, strbt_dataframe, time_of_data_file)
 
 

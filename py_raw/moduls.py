@@ -57,7 +57,9 @@ def get_name_of_newest_data_file(logger):
         file_list = os.listdir(path_to_data_dir)
         full_list = [os.path.join(path_to_data_dir, i) for i in file_list]  # get full list of all files in dir
         newest_file_name = sorted(filter(lambda x: x.endswith('.csv'), full_list), key=os.path.getmtime)[-1]
-        return newest_file_name
+        time_of_data_file = datetime.fromtimestamp(os.path.getmtime(newest_file_name)).strftime('%Y-%m-%d %H:%M:%S')
+        print('время последнего файла:', time_of_data_file)
+        return newest_file_name, time_of_data_file
     except FileNotFoundError as e:
         error_message = 'moduls/get_name_of_newest_data_file - ' + str(e)
         logger.error(error_message)
@@ -278,7 +280,7 @@ def get_bot_token_from_yaml(logger):
         logger.error(error_message)
 
 
-def bot_runner(logger, token, dataframe):
+def bot_runner(logger, token, dataframe, time_of_data_file):
     bot = telebot.TeleBot(token)  # create bot
     markdown = """
     *bold text*
@@ -327,6 +329,9 @@ def bot_runner(logger, token, dataframe):
                 bot.send_message(message.chat.id, 'Пока')
             elif message.text.lower() == 'да':
                 bot.send_message(message.chat.id, 'Хорошо, я написал разработчику, спасибо! 🚀')
+            elif message.text.lower() == 'up':
+                output_message = 'время обновления файла с данным:' + str(time_of_data_file)
+                bot.send_message(message.chat.id, output_message)
 
     bot.polling()
 
