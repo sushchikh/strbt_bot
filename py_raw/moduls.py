@@ -118,6 +118,7 @@ def get_item_from_dataframe(logger, dataframe, message):
         # item_price_retail = dataframe.loc[[message], ['Розница']].values[0][0]
         item_price_prepayment = str(dataframe.loc[[message], ['ОптПредоплата']].values[0][0])
         item_price_retail = str(dataframe.loc[[message], ['Розница']].values[0][0])
+        item_price_club = str(dataframe.loc[[message], ['Клубная']].values[0][0])
         item_bonus = (str(dataframe.loc[[message], ['Бонус']].values[0][0]))
 
         output_message = f"""    {formated_item_name}
@@ -130,6 +131,7 @@ def get_item_from_dataframe(logger, dataframe, message):
 резерв:  {item_reserve} {item_measure}
 
 розница:  *{item_price_retail}* р.
+клубная:  *{item_price_club}* р.
 опт-предоплата:  *{item_price_prepayment}* р.
 бонус:  {item_bonus}"""
         # print(output_message)
