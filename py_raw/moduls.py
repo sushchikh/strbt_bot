@@ -7,6 +7,7 @@ import datetime
 from datetime import datetime
 import requests
 from datetime import timedelta
+import math
 from time import sleep
 
 
@@ -119,7 +120,11 @@ def get_item_from_dataframe(logger, dataframe, message):
         item_price_prepayment = str(dataframe.loc[[message], ['ОптПредоплата']].values[0][0])
         item_price_retail = str(dataframe.loc[[message], ['Розница']].values[0][0])
         item_price_club = str(dataframe.loc[[message], ['Клубная']].values[0][0])
+        item_price_otsrochka_2 = str(dataframe.loc[[message], ['ОптОтсрочка2']].values[0][0])
         item_bonus = (str(dataframe.loc[[message], ['Бонус']].values[0][0]))
+        item_dostavka_siktivkar = str(dataframe.loc[[message], ['Доставка Сыктывкар']].values[0][0])
+        if item_dostavka_siktivkar == 'nan':
+            item_dostavka_siktivkar = 0
 
         output_message = f"""    {formated_item_name}
 *ОСТАТКИ:*
@@ -132,8 +137,10 @@ def get_item_from_dataframe(logger, dataframe, message):
 
 розница:  *{item_price_retail}* р.
 клубная:  *{item_price_club}* р.
+опт-отстрочка-2: *{item_price_otsrochka_2}* р.
 опт-предоплата:  *{item_price_prepayment}* р.
-бонус:  {item_bonus}"""
+бонус:  {item_bonus}
+доставка до Сыктывкара:  {item_dostavka_siktivkar} р."""
         # print(output_message)
         wrong_user_request = -1  # magic numbers =)
         is_item_exist = True
