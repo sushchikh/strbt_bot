@@ -123,8 +123,22 @@ def get_item_from_dataframe(logger, dataframe, message):
         item_price_otsrochka_2 = str(dataframe.loc[[message], ['ОптОтсрочка2']].values[0][0])
         item_bonus = (str(dataframe.loc[[message], ['Бонус']].values[0][0]))
         item_dostavka_siktivkar = str(dataframe.loc[[message], ['Доставка Сыктывкар']].values[0][0])
-        if item_dostavka_siktivkar == 'nan':
-            item_dostavka_siktivkar = 0
+        if item_dostavka_siktivkar == 'nan' or item_dostavka_siktivkar == '0':
+            item_dostavka_siktivkar_message = ''
+        else:
+            item_dostavka_siktivkar_message = f'\nдоставка до Сыктывкара:  {item_dostavka_siktivkar} р.'
+
+        item_price_akciya_siktivkar = str(dataframe.loc[[message], ['ЦенаАкцияСыктывкар']].values[0][0])
+        if item_price_akciya_siktivkar == 'nan' or item_price_akciya_siktivkar == '0':
+            item_price_akciya_siktivkar_message = ''
+        else:
+            item_price_akciya_siktivkar_message = f'\nцена акция-Сыктывкар:  *{item_price_akciya_siktivkar}* р.'
+
+        item_price_instrument = str(dataframe.loc[[message], ['Инструмент']].values[0][0])
+        if item_price_instrument == 'nan' or item_price_instrument == '0':
+            item_price_instrument_message = ''
+        else:
+            item_price_instrument_message = f'\nцена в Инструменте: {item_price_instrument} р.'
 
         output_message = f"""    {formated_item_name}
 *ОСТАТКИ:*
@@ -135,12 +149,12 @@ def get_item_from_dataframe(logger, dataframe, message):
 
 резерв:  {item_reserve} {item_measure}
 
+*ЦЕНЫ:*
 розница:  *{item_price_retail}* р.
 клубная:  *{item_price_club}* р.
 опт-отстрочка-2: *{item_price_otsrochka_2}* р.
-опт-предоплата:  *{item_price_prepayment}* р.
-бонус:  {item_bonus}
-доставка до Сыктывкара:  {item_dostavka_siktivkar} р."""
+опт-предоплата:  *{item_price_prepayment}* р.{item_price_akciya_siktivkar_message}
+бонус:  {item_bonus}{item_dostavka_siktivkar_message}{item_price_instrument_message}"""
         # print(output_message)
         wrong_user_request = -1  # magic numbers =)
         is_item_exist = True
