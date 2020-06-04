@@ -93,15 +93,22 @@ def get_item_from_dataframe(logger, dataframe, message):
     """
     try:
         message = int(message)
-        item_name = dataframe.loc[[message], ['Номенклатура']].values[0][0].split(', ')
-        formated_item_name = ''
-        for i in item_name:
-            if i == item_name[0]:
-                formated_item_name = '*' + formated_item_name + str(i) + '*' + '\n'
-            else:
-                formated_item_name = formated_item_name + str(i) + '\n'
-        item_measure = dataframe.loc[[message], ['Ед.изм.']].values[0][0]
 
+        # item_name = dataframe.loc[[message], ['Номенклатура']].values[0][0].split(', ')
+        # formated_item_name = ''
+        # for i in item_name:
+        #     if i == item_name[0]:
+        #         formated_item_name = '*' + formated_item_name + str(i) + '*' + '\n'
+        #     else:
+        #         formated_item_name = formated_item_name + str(i) + '\n'
+
+        # test ------------
+        formated_item_name = dataframe.loc[[message], ['Номенклатура']].values[0][0] + '\n'
+        formated_item_name = formated_item_name.replace('*', 'x')
+        # test ------------
+
+
+        item_measure = dataframe.loc[[message], ['Ед.изм.']].values[0][0]
         if item_measure == 'шт':
             item_pugach_value = int(dataframe.loc[[message], ['Количество Основной склад']].values[0][0])
             item_dzerj_value = int(dataframe.loc[[message], ['Количество База Дзержинского']].values[0][0])
@@ -112,16 +119,18 @@ def get_item_from_dataframe(logger, dataframe, message):
             item_dzerj_value = str(dataframe.loc[[message], ['Количество База Дзержинского']].values[0][0])
             item_chepetsk_value = str(dataframe.loc[[message], ['Количество Чепецк']].values[0][0])
             item_siktivkar_value = str(dataframe.loc[[message], ['Количество Сыктывкар']].values[0][0])
+
         item_reserve = dataframe.loc[[message], ['Резерв']].values[0][0]
         if not(str(item_reserve).isdigit()):
             item_reserve = 0
-        # item_price_prepayment = dataframe.loc[[message], ['ОптПредоплата']].values[0][0]
-        # item_price_retail = dataframe.loc[[message], ['Розница']].values[0][0]
+
         item_price_prepayment = str(dataframe.loc[[message], ['ОптПредоплата']].values[0][0])
         item_price_retail = str(dataframe.loc[[message], ['Розница']].values[0][0])
         item_price_club = str(dataframe.loc[[message], ['Клубная']].values[0][0])
         item_price_otsrochka_2 = str(dataframe.loc[[message], ['ОптОтсрочка2']].values[0][0])
+        item_price_otsrochka_1 = str(dataframe.loc[[message], ['ОптОтсрочка1']].values[0][0])
         item_bonus = (str(dataframe.loc[[message], ['Бонус']].values[0][0]))
+
         item_dostavka_siktivkar = str(dataframe.loc[[message], ['Доставка Сыктывкар']].values[0][0])
         if item_dostavka_siktivkar == 'nan' or item_dostavka_siktivkar == '0':
             item_dostavka_siktivkar_message = ''
@@ -138,7 +147,13 @@ def get_item_from_dataframe(logger, dataframe, message):
         if item_price_instrument == 'nan' or item_price_instrument == '0':
             item_price_instrument_message = ''
         else:
-            item_price_instrument_message = f'\nцена в Инструменте: {item_price_instrument} р.'
+            item_price_instrument_message = f'\nцена в Инструменте:  {item_price_instrument} р.'
+
+        item_price_akciya = str(dataframe.loc[[message], ['ЦенаАкция']].values[0][0])
+        if item_price_akciya == 'nan' or item_price_akciya == '0':
+            item_price_akciya_message = ''
+        else:
+            item_price_akciya_message = f'\nцена-акция:  *{item_price_akciya}* p.'
 
         output_message = f"""    {formated_item_name}
 *ОСТАТКИ:*
@@ -152,8 +167,7 @@ def get_item_from_dataframe(logger, dataframe, message):
 *ЦЕНЫ:*
 розница:  *{item_price_retail}* р.
 клубная:  *{item_price_club}* р.
-опт-отстрочка-2: *{item_price_otsrochka_2}* р.
-опт-предоплата:  *{item_price_prepayment}* р.{item_price_akciya_siktivkar_message}
+опт-отстрочка-1:  *{item_price_otsrochka_1}* р.{item_price_akciya_siktivkar_message}{item_price_akciya_message}
 бонус:  {item_bonus}{item_dostavka_siktivkar_message}{item_price_instrument_message}"""
         # print(output_message)
         wrong_user_request = -1  # magic numbers =)
@@ -167,7 +181,6 @@ def get_item_from_dataframe(logger, dataframe, message):
 Если ты уверен, что все правильно — напиши мне "да" и я сообщу об этом разработчику 😉"""
         wrong_user_request = message
         is_item_exist = False
-
     return output_message, wrong_user_request, is_item_exist
 
 
@@ -220,7 +233,7 @@ def find_item_func(logger, message, dataframe):
     return output_message
 
 
-###    ########  ########  #### ######## #### ##     ## ########  ######
+   ###    ########  ########  #### ######## #### ##     ## ########  ######
   ## ##   ##     ## ##     ##  ##     ##     ##  ##     ## ##       ##    ##
  ##   ##  ##     ## ##     ##  ##     ##     ##  ##     ## ##       ##
 ##     ## ##     ## ##     ##  ##     ##     ##  ##     ## ######    ######
@@ -326,6 +339,9 @@ def bot_runner(logger, token, dataframe, time_of_data_file):
         if is_message_digit(message.text):
             # description of item:
             output_message, wrong_user_request, is_item_exist = get_item_from_dataframe(logger, dataframe, message.text)
+            print(output_message)
+            print(wrong_user_request)
+            print(is_item_exist)
             bot.send_message(message.chat.id, output_message, parse_mode="Markdown")
             # download and send photo
             is_image_exist, item_img_name = get_picture_of_item(logger, message.text)
@@ -337,7 +353,7 @@ def bot_runner(logger, token, dataframe, time_of_data_file):
             elif is_item_exist and not(is_image_exist):
                 bot.send_message(message.chat.id, item_img_name)  # if no image send message
             elif not(is_item_exist) and not(is_image_exist):
-                pass
+                print('вот тут то *опа и закралась')
 
             if wrong_user_request != -1:
                 wrong_user_request = str(wrong_user_request) + ' - ' + user
