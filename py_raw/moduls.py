@@ -167,7 +167,9 @@ def get_item_from_dataframe(logger, dataframe, message):
 *ЦЕНЫ:*
 розница:  *{item_price_retail}* р.
 клубная:  *{item_price_club}* р.
-опт-отстрочка-1:  *{item_price_otsrochka_1}* р.{item_price_akciya_siktivkar_message}{item_price_akciya_message}
+опт-отстрочка-1:  *{item_price_otsrochka_1}* р.
+предоплата:  *{item_price_prepayment}* .р {item_price_akciya_siktivkar_message}{item_price_akciya_message}
+
 бонус:  {item_bonus}{item_dostavka_siktivkar_message}{item_price_instrument_message}"""
         # print(output_message)
         wrong_user_request = -1  # magic numbers =)
