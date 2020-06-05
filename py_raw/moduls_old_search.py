@@ -7,7 +7,6 @@ import datetime
 from datetime import datetime
 import requests
 from datetime import timedelta
-from fuzzywuzzy import fuzz
 import math
 from time import sleep
 
@@ -194,60 +193,44 @@ def find_item_func(logger, message, dataframe):
     split message by whitespace, check matches in all items_names
     """
 
-    # list_of_words_from_user_message = message.strip().lower().split(' ')
-    # # print(strbt_dataframe)
-    # print('поисковое пользовательское сообщене:', *list_of_words_from_user_message)
-    # # print(strbt_dataframe.iloc[1]['Номенклатура'])
-    # count_of_matches = 0
-    # pos_of_match_item = []
-    # list_of_few_items_names = []
-    # for i in range(len(dataframe)):
-    #
-    #     list_of_words_from_dataframe_item = str(dataframe.iloc[i]['Номенклатура']).replace('"', '').replace('(','').replace(')', '').strip().lower().split(' ')
-    #
-    #     # print(*list_of_words_from_dataframe_item)
-    #     check = all(item in list_of_words_from_dataframe_item for item in list_of_words_from_user_message)
-    #     if check:
-    #         count_of_matches += 1
-    #         pos_of_match_item.append(dataframe.iloc[i])
-    #         list_of_few_items_names.append(str(
-    #             '*' +
-    #             str(dataframe.index.values[i]) +
-    #             '*' + ' - ' +
-    #             str(dataframe.iloc[i]['Номенклатура']).replace('"', '').replace('(', '').replace(')', '').strip()))
-    # # if count_of_matches == 1:
-    # #     output_message = ('Нашел одно совпадение:\n' +
-    # #                       str(pos_of_match_item[0]) + ' - ')
-    #     if count_of_matches > 11:
-    #         break
-    #
-    # if count_of_matches == 0:
-    #     output_message = 'не нашел ни одного совпадения, либо что-то пошло не так 😖'
-    # elif count_of_matches > 10:
-    #     output_message = "слишком много совпадений, попробуй уточнить запрос"
-    # elif 1 <= count_of_matches <= 10:  # если совпадения есть
-    #     # print(f'*нашел {count_of_matches} совпадений:*\n\n')
-    #     output_message = f'*нашел {count_of_matches} совпадений:*\n\n'
-    #     for i in list_of_few_items_names:
-    #         output_message += (str(i) + '\n')
-    # else:
-    #     output_message = 'опа-опа'
+    list_of_words_from_user_message = message.strip().lower().split(' ')
+    # print(strbt_dataframe)
+    print('поисковое пользовательское сообщене:', *list_of_words_from_user_message)
+    # print(strbt_dataframe.iloc[1]['Номенклатура'])
+    count_of_matches = 0
+    pos_of_match_item = []
+    list_of_few_items_names = []
+    for i in range(len(dataframe)):
 
-    output_message = ''
-    
-    def get_sample(sample, string):
-        return fuzz.token_set_ratio(sample, string)
+        list_of_words_from_dataframe_item = str(dataframe.iloc[i]['Номенклатура']).replace('"', '').replace('(','').replace(')', '').strip().lower().split(' ')
 
-    output_df = dataframe[dataframe['Номенклатура'].apply(get_sample, args=[message]) > 95]
-    if len(output_df) == 0:
+        # print(*list_of_words_from_dataframe_item)
+        check = all(item in list_of_words_from_dataframe_item for item in list_of_words_from_user_message)
+        if check:
+            count_of_matches += 1
+            pos_of_match_item.append(dataframe.iloc[i])
+            list_of_few_items_names.append(str(
+                '*' +
+                str(dataframe.index.values[i]) +
+                '*' + ' - ' +
+                str(dataframe.iloc[i]['Номенклатура']).replace('"', '').replace('(', '').replace(')', '').strip()))
+    # if count_of_matches == 1:
+    #     output_message = ('Нашел одно совпадение:\n' +
+    #                       str(pos_of_match_item[0]) + ' - ')
+        if count_of_matches > 11:
+            break
+
+    if count_of_matches == 0:
         output_message = 'не нашел ни одного совпадения, либо что-то пошло не так 😖'
-    elif len(output_df) > 15:
-        output_message = 'слишком много совпадений, попробуй уточнить запрос'
+    elif count_of_matches > 10:
+        output_message = "слишком много совпадений, попробуй уточнить запрос"
+    elif 1 <= count_of_matches <= 10:  # если совпадения есть
+        # print(f'*нашел {count_of_matches} совпадений:*\n\n')
+        output_message = f'*нашел {count_of_matches} совпадений:*\n\n'
+        for i in list_of_few_items_names:
+            output_message += (str(i) + '\n')
     else:
-        output_message = f'*нашел {len(output_df)} совпадений:*\n\n'
-        for i in output_df.index:
-            output_message += '*' + str(i) + '* ' + str(output_df.loc[[i], ['Номенклатура']].values[0][0]) + '\n'
-            # print(i, output_df.loc[[i], ['Номенклатура']].values[0][0])
+        output_message = 'опа-опа'
 
     return output_message
 
