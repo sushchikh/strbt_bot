@@ -234,7 +234,7 @@ def find_item_func(logger, message, dataframe):
     #     output_message = 'опа-опа'
 
     output_message = ''
-    
+
     def get_sample(sample, string):
         return fuzz.token_set_ratio(sample, string)
 
@@ -246,7 +246,7 @@ def find_item_func(logger, message, dataframe):
     else:
         output_message = f'*нашел {len(output_df)} совпадений:*\n\n'
         for i in output_df.index:
-            output_message += '*' + str(i) + '* ' + str(output_df.loc[[i], ['Номенклатура']].values[0][0]) + '\n'
+            output_message += '*' + str(i) + '* ' + str(output_df.loc[[i], ['Номенклатура']].values[0][0]).replace('*', 'x') + '\n' + '\n'
             # print(i, output_df.loc[[i], ['Номенклатура']].values[0][0])
 
     return output_message
