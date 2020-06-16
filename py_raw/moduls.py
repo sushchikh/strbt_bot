@@ -194,45 +194,6 @@ def find_item_func(logger, message, dataframe):
     split message by whitespace, check matches in all items_names
     """
 
-    # list_of_words_from_user_message = message.strip().lower().split(' ')
-    # # print(strbt_dataframe)
-    # print('поисковое пользовательское сообщене:', *list_of_words_from_user_message)
-    # # print(strbt_dataframe.iloc[1]['Номенклатура'])
-    # count_of_matches = 0
-    # pos_of_match_item = []
-    # list_of_few_items_names = []
-    # for i in range(len(dataframe)):
-    #
-    #     list_of_words_from_dataframe_item = str(dataframe.iloc[i]['Номенклатура']).replace('"', '').replace('(','').replace(')', '').strip().lower().split(' ')
-    #
-    #     # print(*list_of_words_from_dataframe_item)
-    #     check = all(item in list_of_words_from_dataframe_item for item in list_of_words_from_user_message)
-    #     if check:
-    #         count_of_matches += 1
-    #         pos_of_match_item.append(dataframe.iloc[i])
-    #         list_of_few_items_names.append(str(
-    #             '*' +
-    #             str(dataframe.index.values[i]) +
-    #             '*' + ' - ' +
-    #             str(dataframe.iloc[i]['Номенклатура']).replace('"', '').replace('(', '').replace(')', '').strip()))
-    # # if count_of_matches == 1:
-    # #     output_message = ('Нашел одно совпадение:\n' +
-    # #                       str(pos_of_match_item[0]) + ' - ')
-    #     if count_of_matches > 11:
-    #         break
-    #
-    # if count_of_matches == 0:
-    #     output_message = 'не нашел ни одного совпадения, либо что-то пошло не так 😖'
-    # elif count_of_matches > 10:
-    #     output_message = "слишком много совпадений, попробуй уточнить запрос"
-    # elif 1 <= count_of_matches <= 10:  # если совпадения есть
-    #     # print(f'*нашел {count_of_matches} совпадений:*\n\n')
-    #     output_message = f'*нашел {count_of_matches} совпадений:*\n\n'
-    #     for i in list_of_few_items_names:
-    #         output_message += (str(i) + '\n')
-    # else:
-    #     output_message = 'опа-опа'
-
     output_message = ''
 
     def get_sample(sample, string):
@@ -324,6 +285,15 @@ def get_dict_phones_from_file_by_letter():
         # print(output_message)
     return dict_of_phone_numbers
 
+# --------------------------------------------------------------------------------------------
+#
+def get_dict_of_inside_phone_numbers():
+    with open('/home/sushchikh/strbt_bot/phones/inside_phones.yaml', 'r') as f:
+        dict_of_inside_phone_numbers = yaml.safe_load(f.read())
+
+    return dict_of_inside_phone_numbers
+
+
 ########   #######  ########
 ##     ## ##     ##    ##
 ##     ## ##     ##    ##
@@ -344,7 +314,7 @@ def get_bot_token_from_yaml(logger):
         logger.error(error_message)
 
 
-def bot_runner(logger, token, dataframe, time_of_data_file, dict_of_phones):
+def bot_runner(logger, token, dataframe, time_of_data_file, dict_of_phones, dict_of_inside_phone_numbers):
     bot = telebot.TeleBot(token)  # create bot
     markdown = """
     *bold text*
@@ -360,8 +330,10 @@ def bot_runner(logger, token, dataframe, time_of_data_file, dict_of_phones):
         user = (str(message.from_user.last_name) + ' ' +
                 str(message.from_user.first_name) + ' ' +
                 str(message.from_user.username))
+        print(user)
         user_message = user + ' - ' + message.text
-        save_user_message(user_message)
+        if user != 'Artem Sushchikh sushchikh':
+            save_user_message(user_message)
 
         # клавиатура:
         keyboard1 = telebot.types.ReplyKeyboardMarkup(True)
@@ -378,7 +350,6 @@ def bot_runner(logger, token, dataframe, time_of_data_file, dict_of_phones):
         btn_6 = telebot.types.KeyboardButton('Е')
         btn_7 = telebot.types.KeyboardButton('Ж')
         btn_8 = telebot.types.KeyboardButton('З')
-        btn_25 = telebot.types.KeyboardButton('И')
         btn_9 = telebot.types.KeyboardButton('К')
         btn_10 = telebot.types.KeyboardButton('Л')
         btn_11 = telebot.types.KeyboardButton('М')
@@ -395,6 +366,7 @@ def bot_runner(logger, token, dataframe, time_of_data_file, dict_of_phones):
         btn_22 = telebot.types.KeyboardButton('Ш')
         btn_23 = telebot.types.KeyboardButton('Э')
         btn_24 = telebot.types.KeyboardButton('Я')
+        btn_25 = telebot.types.KeyboardButton('И')  # забыл букву 'И'
 
         btn_return = telebot.types.KeyboardButton('Вернутся в главное меню')
 
@@ -444,121 +416,7 @@ def bot_runner(logger, token, dataframe, time_of_data_file, dict_of_phones):
                 output_message = 'Здесь будет запрос на выбор реквизитов с выбором фирм'
                 bot.send_message(message.chat.id, output_message, parse_mode="Markdown", reply_markup=keyboard1)
             elif (message.text.lower() == 'телефоны') or (message.text == 'Внутренние номера') or (message.text.lower() == 'номер') or (message.text.lower() == 'телефоны'):
-                output_message = """
-*ДИРЕКЦИЯ:*
-    Усцов А.В.  -  115
-    Малыгин М.Я.  -  302
-    Колобов Е.Е.  -  114
-    Панкратов А.С.  -  110
-                        
-*ОТДЕЛ ОПТОВЫХ ПРОДАЖ:*
-    Стариков А.С.  -  211
-    Чирков М.С  -  235
-    Ситников М.В.   -  252
-    Страхов Д.М.  -  116
-    Ивлев В.В.  -  201
-
-*ОТДЕЛ ПРЯМЫХ ПРОДАЖ:*    
-    Анисимов С.Ю.  -  122
-    Городчиков В.Н.  -  222
-    Деветьяров Р.И.  -  244
-    Делог К.Н.  -  103
-    Ефимов С.Б.  -  230
-    Загоскин В.В.  -  224
-    Костров И.Е.  -  255
-    Кузнецов А.В.  -  221
-    Кукреш П.А.  -  125
-    Новоселов Е.А.  -  220
-    Пичугин Д.Ю.  -  261
-    Бузмаков А.П.  -  128
-    Помыткин Д.О.  -  259
-    Петрушин П.А.  -  130
-    Рубцов А.А.  -  237
-    Поглазова М.Н.  -  104
-    Садовников И.С.  -  131
-    Спиридонов Ю.В.  -  108
-    Ускова Я.О.  -  245
-    Шустова О.А.  -  234
-
-*ОТДЕЛ СНАБЖЕНИЯ:*
-    Смотрин Д.В.  -  112
-    Зубарев М.А.  -  240
-    Девятериков И.В.  -  233
-    Ляпина Е.В.  -  129
-    Широкова А.С.  -  218
-    Вахрушев П.Ю.  -  133
-
-*ОТДЕЛ МАРКЕТИНГА:*
-    Сущих Н.С.  -  251
-    Маргиева И.А.  -  121
-    Пантюхина Я.Л.  -  260
-
-*КАССЫ + РЕСЕПШН:*
-    Ресепшен Пугачева  -  101, 102, 229 (факс)
-    Кассы Пугачева  -  231
-    Кассы Чепецк  -  75-15-10 или 83361-2-25-25
-    Кассы Дзержинского  -  304
-    Кассы Сыктывкар  -  400
-
-*БУХГАЛТЕРИЯ:*
-    Шемаева А.В.  -  117
-    Сидина Н.Р.  -  118
-    Сметанина И.В.  -  119
-    Широкова И.Н.  -  243
-
-*ОФИСНЫЕ СОТРУНИКИ:*
-    Крекнин Д.Г.  -  227
-    Кашина Ю.А.  -  124
-    Шалагинов А.Н.  -  232
-    Овечкин А.А.  -  258
-    Пантелеева О.Ю.  -  256
-    Сущих А.В.  -  109
-
-*СКЛАД ПУГАЧЕВА:*
-    Маргиев С.Н.  -  226
-    Утешева С.С.  -  225
-    Алексеева Л.П.  -  257
-    Ходырев В.Ю.  -  238
-    Армяков А.В.  -  223
-
-*СЕРВИСНЫЙ ЦЕНТР:*
-    Скопин С.В.  -  250
-    Мастерская 2 эатж  -  249
-    Приемка  -  246, 247, 126
-    Офис  -  202
-    Бухгалтер  -  253
-    Якурнова М.А.  -  248
-
-*МАГАЗИН СЫКТЫВКАР*
-    Магазин  -  (8212) 400-456, 8922-598-59-72
-    Кузнецов С.А.  -  403
-    Ходченко Д.В.  -  404
-    Батманов А.Г.  -  401
-    Туров Е.А.  -  402
-
-*МАГАЗИН ДЗЕРЖИНСКОГО*
-    Касса  -  304
-    Токарев И.С.  -  305
-    Охрана  -  306
-    Перминов А.С.  -  307
-    Копосов В.Н.  -  311
-    Эсаулов К.И.  -  313
-    Андреев К.В.  -  312
-    Шихов С.Б.  -  303
-
-*МАГАЗИН ПУГАЧЕВА:*
-    Верещагин Д.Н.  -  106
-    Токмаков И.Н.  -  132
-    Маренин А.А.  -  242
-    Торговый зал  -  107, 123
-    Крепёж  -  228
-    Решетняк А.К.  -  254
-    Тетенькин В.А.  -  105
-
-
-    
-    
-"""
+                output_message = dict_of_inside_phone_numbers['all_phones']
                 bot.send_message(message.chat.id, output_message, parse_mode="Markdown", reply_markup=keyboard1)
 
             elif len(message.text) > 2:
@@ -572,7 +430,6 @@ def bot_runner(logger, token, dataframe, time_of_data_file, dict_of_phones):
             elif message.text in letters:
                 output_message = dict_of_phones[message.text]
                 bot.send_message(message.chat.id, output_message, parse_mode="Markdown", reply_markup=keyboard1)
-
 
     bot.polling()
 
