@@ -455,9 +455,6 @@ def bot_runner(logger, token, dataframe, dict_of_phones, dict_of_inside_phone_nu
     #         sleep(15)
 
 
-def test_func(logger):
-    # logger.error('some error')
-    pass
 
 
 if __name__ == '__main__':

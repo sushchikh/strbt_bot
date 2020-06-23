@@ -14,5 +14,9 @@ def data_downloader():
         with open(name_of_saving_file, 'wb') as file:
             file.write(data_file.content)
     except Exception as e:
-        pass
+        print('не нашел свежего датника!')
     print('data download well done')
+
+
+if __name__ == '__main__':
+    data_downloader()
