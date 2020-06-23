@@ -50,6 +50,7 @@ def data_downloader(logger):
         logger.error(error_message)
     print('data download welldone')
 
+
 # --------------------------------------------------------------------------------------------
 # определяет какой из файлов в папке свежий, возвращает имя новейшего xls-файла
 def get_name_of_newest_data_file(logger):
@@ -68,12 +69,24 @@ def get_name_of_newest_data_file(logger):
 
 
 # --------------------------------------------------------------------------------------------
+# определяет свежий дата-файл по сегодняшней дате, если его нет - вчерашний, возвращает один из них
+def get_today_data_file_name():
+    today = datetime.today()
+    yesterday = datetime.today() - timedelta(days=1)
+    today_file_name = '/home/sushchikh/strbt_bot/data/' + str(today.strftime("%Y%m%d")) + '.csv'
+    yesterday_file_name = '/home/sushchikh/strbt_bot/data/' + str(yesterday.strftime("%Y%m%d")) + '.csv'
+    # print(f'today file name: {today_file_name}')
+    # print(f'yesterday file name: {yesterday_file_name}')
+    return today_file_name, yesterday_file_name
+
+
+# --------------------------------------------------------------------------------------------
 # берет свежайщий файл, считывает его в датафрейм пандасовский
-def get_strbt_dataframe_from_xls_file(logger, newest_file_name):
+def get_strbt_dataframe_from_xls_file(logger, today_data_file, yesterday_data_file):
     """read xls-file, return dataframe"""
 
     try:
-        strbt_dataframe = pd.read_csv(newest_file_name, index_col='Код', delimiter=';', encoding='windows-1251',
+        strbt_dataframe = pd.read_csv(today_data_file, index_col='Код', delimiter=';', encoding='windows-1251',
                                       error_bad_lines=True)
         print('data read well done')
         return strbt_dataframe
@@ -82,8 +95,10 @@ def get_strbt_dataframe_from_xls_file(logger, newest_file_name):
                          ' no argument with file name, look get_name_of_newest_data_file function')
         logger.error(error_message)
     except FileNotFoundError as e:
-        error_message = 'moduls/get_strbt_dataframe_from_xls_file - ' + str(e)
-        logger.error(error_message)
+        strbt_dataframe = pd.read_csv(yesterday_data_file, index_col='Код', delimiter=';', encoding='windows-1251',
+                                      error_bad_lines=True)
+        print('data read from yesterday file, done')
+        return strbt_dataframe
 
 
 # --------------------------------------------------------------------------------------------
@@ -314,7 +329,7 @@ def get_bot_token_from_yaml(logger):
         logger.error(error_message)
 
 
-def bot_runner(logger, token, dataframe, time_of_data_file, dict_of_phones, dict_of_inside_phone_numbers):
+def bot_runner(logger, token, dataframe, dict_of_phones, dict_of_inside_phone_numbers):
     bot = telebot.TeleBot(token)  # create bot
     markdown = """
     *bold text*
@@ -425,8 +440,7 @@ def bot_runner(logger, token, dataframe, time_of_data_file, dict_of_phones, dict
             elif message.text.lower() == 'да':
                 bot.send_message(message.chat.id, 'Хорошо, я написал разработчику, спасибо! 🚀')
             elif message.text.lower() == 'up':
-                output_message = 'время обновления файла с данным: ' + str(time_of_data_file) + '(время серверное -3)'
-                bot.send_message(message.chat.id, output_message)
+                get_today_data_file_name()
             elif message.text in letters:
                 output_message = dict_of_phones[message.text]
                 bot.send_message(message.chat.id, output_message, parse_mode="Markdown", reply_markup=keyboard1)
