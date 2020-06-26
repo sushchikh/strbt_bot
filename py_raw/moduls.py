@@ -345,7 +345,7 @@ def bot_runner(logger, token, dataframe, dict_of_phones, dict_of_inside_phone_nu
         user = (str(message.from_user.last_name) + ' ' +
                 str(message.from_user.first_name) + ' ' +
                 str(message.from_user.username))
-        print(user)
+        # print(user)  # если хочется посмотреть от кого сообщение
         user_message = user + ' - ' + message.text
         if user != 'Artem Sushchikh sushchikh':
             save_user_message(user_message)
@@ -401,9 +401,9 @@ def bot_runner(logger, token, dataframe, dict_of_phones, dict_of_inside_phone_nu
         if is_message_digit(message.text):
             # description of item:
             output_message, wrong_user_request, is_item_exist = get_item_from_dataframe(logger, dataframe, message.text)
-            print(output_message)
-            print(wrong_user_request)
-            print(is_item_exist)
+            # print(output_message)  # если хочется посмотреть исходящее сообщение
+            # print(wrong_user_request)  # если сообщение неверное (не код)
+            # print(is_item_exist)  # существует ли такая запись
             bot.send_message(message.chat.id, output_message, parse_mode="Markdown", reply_markup=keyboard1)
             # download and send photo
             is_image_exist, item_img_name = get_picture_of_item(logger, message.text)
