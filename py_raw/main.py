@@ -1,11 +1,11 @@
 from moduls import get_logger
-from moduls import get_name_of_newest_data_file
+# from moduls import get_name_of_newest_data_file  # deprecated
 from moduls import get_strbt_dataframe_from_xls_file
 from moduls import get_bot_token_from_yaml
 from moduls import bot_runner
-from moduls import save_user_message
-from moduls import get_item_from_dataframe
-from moduls import data_downloader
+# from moduls import save_user_message  # deprecated
+# from moduls import get_item_from_dataframe  # deprecated
+# from moduls import data_downloader  # deprecated
 from moduls import get_dict_phones_from_file_by_letter
 from moduls import get_dict_of_inside_phone_numbers
 from moduls import get_today_data_file_name
@@ -22,8 +22,6 @@ if __name__ == "__main__":
     # newest_data_file, time_of_data_file = get_name_of_newest_data_file(logger)
     today_data_file, yesterday_data_file = get_today_data_file_name()
     strbt_dataframe = get_strbt_dataframe_from_xls_file(logger, today_data_file, yesterday_data_file)
-    # TODO добавить считывание свежего датафрема по таймеру, скажем каждые два часа
-    # print(strbt_dataframe)
     print('sleep 3 sec for data download well')
     sleep(3)
     token = get_bot_token_from_yaml(logger)

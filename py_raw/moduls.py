@@ -34,6 +34,7 @@ def get_logger():
 
 # --------------------------------------------------------------------------------------------
 #  определяет сегодняшнюю дату, скачивает дата-файл с сервака, кладет его в папку с данными
+#  УСТАРЕЛ, не используется
 def data_downloader(logger):
     today = datetime.today()
     # print(today.strftime("%Y%m%d"))
@@ -309,6 +310,21 @@ def get_dict_of_inside_phone_numbers():
     return dict_of_inside_phone_numbers
 
 
+# --------------------------------------------------------------------------------------------
+# проверяет по какому датафрему работает бот, актуальность данных чекает
+def check_data_actuality():
+    """Проходит по папке с дадтниками, смотрит, какой последний"""
+    try:
+        path_to_data_dir = '/home/sushchikh/strbt_bot/data'
+        file_list = os.listdir(path_to_data_dir)
+        full_list = [os.path.join(path_to_data_dir, i) for i in file_list]  # get full list of all files in dir
+        newest_file_name = sorted(filter(lambda x: x.endswith('.csv'), full_list), key=os.path.getmtime)[-1]
+        time_of_data_file = datetime.fromtimestamp(os.path.getmtime(newest_file_name)).strftime('%Y-%m-%d %H:%M:%S')
+        return newest_file_name, time_of_data_file
+    except FileNotFoundError as e:
+        error_message = 'moduls/get_name_of_newest_data_file - ' + str(e)
+        print(error_message)
+
 ########   #######  ########
 ##     ## ##     ##    ##
 ##     ## ##     ##    ##
@@ -440,7 +456,13 @@ def bot_runner(logger, token, dataframe, dict_of_phones, dict_of_inside_phone_nu
             elif message.text.lower() == 'да':
                 bot.send_message(message.chat.id, 'Хорошо, я написал разработчику, спасибо! 🚀')
             elif message.text.lower() == 'up':
-                get_today_data_file_name()
+                current_data_file_name, current_data_file_date = check_data_actuality()
+                output_message = f"""
+Имя файла с датой по которой работает бот:
+`{current_data_file_name[31:]}`
+Дата создания на серваке (+3 часа):
+`{current_data_file_date}`"""
+                bot.send_message(message.chat.id, output_message, parse_mode="Markdown", reply_markup=keyboard1)
             elif message.text in letters:
                 output_message = dict_of_phones[message.text]
                 bot.send_message(message.chat.id, output_message, parse_mode="Markdown", reply_markup=keyboard1)
