@@ -368,7 +368,7 @@ def bot_runner(logger, token, dataframe, dict_of_phones, dict_of_inside_phone_nu
 
         # клавиатура:
         keyboard1 = telebot.types.ReplyKeyboardMarkup(True)
-        keyboard1.row('Сотовые номера сотрудников', 'Внутренние номера')  #, 'Реквизиты фирм')
+        keyboard1.row('Сотовые номера сотрудников \U0001F4F1', 'Внутренние номера ☎')  #, 'Реквизиты фирм')
 
         letters = ['А','Б','В','Г','Д','Е','Ж','З','И','К','Л','М','Н','О','П','Р','С','Т','У','Ф','Х','Ч','Ш','Э','Я']
 
