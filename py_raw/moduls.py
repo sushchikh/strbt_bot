@@ -144,6 +144,7 @@ def get_item_from_dataframe(logger, dataframe, message):
         item_price_prepayment = str(dataframe.loc[[message], ['ОптПредоплата']].values[0][0])
         item_price_retail = str(dataframe.loc[[message], ['Розница']].values[0][0])
         item_price_club = str(dataframe.loc[[message], ['Клубная']].values[0][0])
+        item_price_corporat = str(dataframe.loc[[message], ['Корпоративная']].values[0][0])
         item_price_otsrochka_2 = str(dataframe.loc[[message], ['ОптОтсрочка2']].values[0][0])
         item_price_otsrochka_1 = str(dataframe.loc[[message], ['ОптОтсрочка1']].values[0][0])
         item_bonus = (str(dataframe.loc[[message], ['Бонус']].values[0][0]))
@@ -184,6 +185,7 @@ def get_item_from_dataframe(logger, dataframe, message):
 *ЦЕНЫ:*
 розница:  *{item_price_retail}* р.
 клубная:  *{item_price_club}* р.
+корпоративная:  *{item_price_corporat}* р.
 опт-отстрочка-1:  *{item_price_otsrochka_1}* р.
 предоплата:  *{item_price_prepayment}* .р {item_price_akciya_siktivkar_message}{item_price_akciya_message}
 
@@ -221,7 +223,7 @@ def find_item_func(logger, message, dataframe):
     elif len(output_df) > 15:
         output_message = 'слишком много совпадений, попробуй уточнить запрос'
     else:
-        output_message = f'*нашел {len(output_df)} совпадений:*\n\n'
+        output_message = f'\U0001F4D1 *нашел {len(output_df)} совпадений:*\n\n'
         for i in output_df.index:
             output_message += '*' + str(i) + '* ' + str(output_df.loc[[i], ['Номенклатура']].values[0][0]).replace('*', 'x') + '\n' + '\n'
             # print(i, output_df.loc[[i], ['Номенклатура']].values[0][0])
@@ -426,7 +428,7 @@ def bot_runner(logger, token, dataframe, dict_of_phones, dict_of_inside_phone_nu
             if is_image_exist and is_item_exist:
                 photo = open(item_img_name, 'rb')
                 # bot.send_photo(message.chat.id, photo, caption=str(message.text))
-                bot.send_document(message.chat.id, photo, caption=str(message.text))
+                bot.send_document(message.chat.id, photo)  # caption=str(message.text) # if need caption
                 photo.close()
             elif is_item_exist and not(is_image_exist):
                 bot.send_message(message.chat.id, item_img_name)  # if no image send message
@@ -437,7 +439,7 @@ def bot_runner(logger, token, dataframe, dict_of_phones, dict_of_inside_phone_nu
                 wrong_user_request = str(wrong_user_request) + ' - ' + user
                 save_stange_user_requests(wrong_user_request)
         else:
-            if message.text == 'Сотовые номера сотрудников':
+            if message.text == 'Сотовые номера сотрудников \U0001F4F1':
                 output_message = 'Выберите букву с которой начинается фамилия'
                 bot.send_message(message.chat.id, output_message, parse_mode="Markdown", reply_markup=keyboard2)
             elif message.text == 'Вернутся в главное меню':
@@ -446,7 +448,7 @@ def bot_runner(logger, token, dataframe, dict_of_phones, dict_of_inside_phone_nu
             elif message.text == 'Реквизиты фирм':
                 output_message = 'Здесь будет запрос на выбор реквизитов с выбором фирм'
                 bot.send_message(message.chat.id, output_message, parse_mode="Markdown", reply_markup=keyboard1)
-            elif (message.text.lower() == 'телефоны') or (message.text == 'Внутренние номера') or (message.text.lower() == 'номер') or (message.text.lower() == 'телефоны'):
+            elif (message.text.lower() == 'телефоны') or (message.text == 'Внутренние номера ☎') or (message.text.lower() == 'номер') or (message.text.lower() == 'телефоны'):
                 output_message = dict_of_inside_phone_numbers['all_phones']
                 bot.send_message(message.chat.id, output_message, parse_mode="Markdown", reply_markup=keyboard1)
 
