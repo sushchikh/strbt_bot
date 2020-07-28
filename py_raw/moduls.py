@@ -122,6 +122,7 @@ def get_item_from_dataframe(logger, dataframe, message):
         # test ------------
         formated_item_name = dataframe.loc[[message], ['Номенклатура']].values[0][0] + '\n'
         formated_item_name = formated_item_name.replace('*', 'x')
+        formated_item_name = formated_item_name.replace('_', ' ')
         # test ------------
 
 
@@ -148,6 +149,8 @@ def get_item_from_dataframe(logger, dataframe, message):
         item_price_otsrochka_2 = str(dataframe.loc[[message], ['ОптОтсрочка2']].values[0][0])
         item_price_otsrochka_1 = str(dataframe.loc[[message], ['ОптОтсрочка1']].values[0][0])
         item_bonus = (str(dataframe.loc[[message], ['Бонус']].values[0][0]))
+        item_price_krasnaya = str(dataframe.loc[[message], ['Красная']].values[0][0])
+
 
         item_dostavka_siktivkar = str(dataframe.loc[[message], ['Доставка Сыктывкар']].values[0][0])
         if item_dostavka_siktivkar == 'nan' or item_dostavka_siktivkar == '0':
@@ -185,6 +188,7 @@ def get_item_from_dataframe(logger, dataframe, message):
 *ЦЕНЫ:*
 розница:  *{item_price_retail}* р.
 клубная:  *{item_price_club}* р.
+красная:  *{item_price_krasnaya}* р.
 корпоративная:  *{item_price_corporat}* р.
 опт-отстрочка-1:  *{item_price_otsrochka_1}* р.
 предоплата:  *{item_price_prepayment}* .р {item_price_akciya_siktivkar_message}{item_price_akciya_message}
